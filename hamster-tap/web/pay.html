@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hamster Tap — оплата картой</title>
+<!--
+  Страница оплаты для рублёвого канала (ЮKassa). Живёт отдельно от мини-аппа: сюда
+  игрок попадает по личной ссылке из бота (/buy), поэтому страницу можно положить
+  на свой домен, а ключи ЮKassa остаются на сервере — страница только просит создать
+  платёж и показывает ссылку на оплату.
+
+  Где взять адрес API: если страница лежит не на домене воркера, укажите его в
+  атрибуте data-api у тега script (см. ниже) или передайте ?api=https://<адрес>.
+  Домен страницы должен быть прописан в PAY_PAGE_ORIGIN, иначе браузер отклонит запрос (CORS).
+-->
+<style>
+  :root {
+    --bg: #101418; --card: #1b2229; --text: #f2f5f7; --muted: #9aa7b2;
+    --accent: #3f8cff; --ok: #37c07a; --warn: #ffb02e;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px 16px 48px; background: var(--bg); color: var(--text);
+    font: 16px/1.45 -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  .wrap { max-width: 460px; margin: 0 auto; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .muted { color: var(--muted); font-size: 14px; }
+  .card {
+    background: var(--card); border-radius: 14px; padding: 14px; margin-top: 14px;
+  }
+  .item { display: flex; align-items: center; gap: 12px; padding: 10px 4px; }
+  .item + .item { border-top: 1px solid rgba(255, 255, 255, .07); }
+  .item .emoji { font-size: 22px; }
+  .item .title { flex: 1; }
+  .item .price { font-weight: 600; white-space: nowrap; }
+  button {
+    font: inherit; color: #fff; background: var(--accent); border: 0; border-radius: 10px;
+    padding: 10px 14px; cursor: pointer;
+  }
+  button[disabled] { opacity: .55; cursor: default; }
+  .owned { color: var(--ok); font-size: 14px; }
+  .status { margin-top: 14px; }
+  .status.ok { color: var(--ok); }
+  .status.wait { color: var(--warn); }
+  .status.err { color: #ff6b6b; }
+  .row { display: flex; gap: 8px; align-items: center; margin-top: 10px; }
+  input[type=email] {
+    flex: 1; font: inherit; color: var(--text); background: #121a21; border: 1px solid #2b353f;
+    border-radius: 10px; padding: 10px;
+  }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Оплата картой или СБП</h1>
+  <div class="muted" id="player">Проверяем ссылку…</div>
+  <div class="status" id="status"></div>
+  <div class="card" id="items"></div>
+  <div class="card hidden" id="receiptBox">
+    <div class="muted">E-mail для чека (если нужен чек от ЮKassa)</div>
+    <div class="row">
+      <input type="email" id="email" placeholder="buyer@example.com">
+    </div>
+  </div>
+  <div class="muted" style="margin-top:14px" id="hint"></div>
+</div>
+
+<script
+  data-api=""
+  src="pay.js"></script>
+</body>
+</html>

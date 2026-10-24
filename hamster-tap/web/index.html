@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0f1220">
+<link rel="icon" href="data:,">
+<title>Hamster Tap — Telegram Mini App</title>
+<!-- Скрипт Telegram: даёт window.Telegram.WebApp (тема, хаптика, viewport, MainButton). -->
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app" class="app">
+  <!-- Шапка: лига, монеты, доход в час -->
+  <header class="topbar">
+    <button class="level-chip" id="levelChip" type="button">
+      <span class="level-emoji" id="levelEmoji">🥉</span>
+      <span class="level-name" id="levelName">Бронза</span>
+      <span class="level-next" id="levelNext"></span>
+    </button>
+    <div class="balance">
+      <span class="balance-coins"><span class="coin">🪙</span><b id="coins">0</b></span>
+      <span class="balance-profit">+<b id="profit">0</b> в час</span>
+    </div>
+    <button class="rank-chip" id="rankChip" type="button" title="Мой профиль">🏆 #—</button>
+  </header>
+
+  <!-- Полоса прогресса лиги -->
+  <div class="level-bar"><div class="level-bar-fill" id="levelBar"></div></div>
+
+  <main class="screens">
+    <!-- Тапанье -->
+    <section class="screen is-active" id="screen-tap">
+      <div class="daily-card" id="dailyCard" hidden>
+        <div class="daily-text">
+          <b>Ежедневный бонус</b>
+          <span id="dailyHint">День 1 · 🪙 500</span>
+        </div>
+        <button class="btn btn-gold" id="dailyBtn" type="button">Забрать</button>
+      </div>
+
+      <div class="tap-zone">
+        <div class="tap-values">
+          <span class="tap-value"><span class="coin">🪙</span> +<b id="tapValue">1</b> за тап</span>
+          <span class="turbo-badge" id="turboBadge" hidden>🚀 Турбо <b id="turboLeft">20</b>с</span>
+          <span class="turbo-badge is-premium" id="boostBadge" hidden>⭐ ×2 <b id="boostLeft">60</b>с</span>
+        </div>
+        <button class="hamster" id="hamster" type="button" aria-label="Тапнуть хомяка">
+          <span class="hamster-emoji">🐹</span>
+        </button>
+        <div class="floats" id="floats" aria-hidden="true"></div>
+      </div>
+
+      <div class="energy">
+        <div class="energy-head">
+          <span>🔋 Энергия</span>
+          <span><b id="energy">0</b> / <span id="energyLimit">0</span></span>
+        </div>
+        <div class="energy-bar"><div class="energy-bar-fill" id="energyBar"></div></div>
+      </div>
+
+      <div class="quick-boosts">
+        <button class="quick" id="quickTurbo" type="button">
+          <span class="quick-emoji">🚀</span><span class="quick-title">Турбо</span>
+          <span class="quick-note" id="quickTurboNote">3/день</span>
+        </button>
+        <button class="quick" id="quickEnergy" type="button">
+          <span class="quick-emoji" id="quickEnergyEmoji">⚡</span><span class="quick-title" id="quickEnergyTitle">Энергия</span>
+          <span class="quick-note" id="quickEnergyNote">6/день</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Биржа карточек -->
+    <section class="screen" id="screen-cards">
+      <div class="screen-head">
+        <h2>Биржа</h2>
+        <span class="badge" id="cardsHint">Покупай бизнесы — доход капает даже офлайн</span>
+      </div>
+      <div class="chips" id="categoryChips"></div>
+      <div class="list" id="cardsList"></div>
+    </section>
+
+    <!-- Задания дня и достижения -->
+    <section class="screen" id="screen-quests">
+      <div class="code-card" id="codeCard">
+        <div class="code-head">
+          <b>🔐 Код дня</b>
+          <span id="codeStatus">Код выдаёт бот командой /code</span>
+        </div>
+        <div class="code-row">
+          <input class="code-input" id="codeInput" type="text" inputmode="text" autocomplete="off"
+                 autocapitalize="characters" spellcheck="false" maxlength="12" placeholder="КОД">
+          <button class="btn btn-gold" id="codeBtn" type="button">Ввести</button>
+        </div>
+      </div>
+
+      <div class="screen-head">
+        <h2>Задания дня</h2>
+        <span class="badge" id="questsHint">Обновляются каждый день в 00:00 UTC</span>
+      </div>
+      <div class="list" id="questsList"></div>
+
+      <div class="screen-head">
+        <h2>Достижения</h2>
+        <span class="badge" id="achBadge">Награда приходит сразу</span>
+      </div>
+      <div class="list" id="achList"></div>
+    </section>
+
+    <!-- Бусты и прокачки -->
+    <section class="screen" id="screen-boosts">
+      <div class="screen-head">
+        <h2>Бусты</h2>
+        <span class="badge">Бесплатные бусты обновляются каждый день</span>
+      </div>
+      <div class="list" id="boostsList"></div>
+
+      <div class="screen-head">
+        <h2>Прокачки</h2>
+        <span class="badge">Покупаются за монеты навсегда</span>
+      </div>
+      <div class="list" id="upgradesList"></div>
+    </section>
+
+    <!-- Друзья -->
+    <section class="screen" id="screen-friends">
+      <div class="screen-head">
+        <h2>Друзья</h2>
+        <span class="badge" id="friendsBadge">Приглашай друзей и получай бонус</span>
+      </div>
+      <div class="invite-box">
+        <button class="btn btn-primary btn-invite" id="inviteBtn" type="button">👥 Пригласить друга</button>
+        <div class="invite-link" id="inviteLink">ссылка появится после настройки бота</div>
+        <button class="btn btn-ghost" id="copyBtn" type="button">Скопировать ссылку</button>
+      </div>
+      <div class="list" id="friendsList"></div>
+    </section>
+
+    <!-- Топ -->
+    <section class="screen" id="screen-top">
+      <div class="screen-head">
+        <h2>Лидерборд</h2>
+        <span class="badge" id="topBadge">Сортировка по монетам</span>
+      </div>
+      <div class="list" id="topList"></div>
+    </section>
+  </main>
+
+  <!-- Нижняя навигация -->
+  <nav class="tabs">
+    <button class="tab is-active" data-screen="tap" type="button"><span>🐹</span>Тапать</button>
+    <button class="tab" data-screen="cards" type="button"><span>🏦</span>Биржа</button>
+    <button class="tab" data-screen="quests" type="button">
+      <span>🎯</span>Задания<b class="tab-badge" id="questsBadge" hidden>0</b>
+    </button>
+    <button class="tab" data-screen="boosts" type="button"><span>🚀</span>Бусты</button>
+    <button class="tab" data-screen="friends" type="button"><span>👥</span>Друзья</button>
+    <button class="tab" data-screen="top" type="button"><span>🏆</span>Топ</button>
+  </nav>
+</div>
+
+<!-- Карточка игрока: открывается по тапу на строку в топе или на свой ранг в шапке -->
+<div class="sheet" id="sheet" hidden>
+  <div class="sheet-backdrop" id="sheetBackdrop"></div>
+  <div class="sheet-card">
+    <button class="sheet-close" id="sheetClose" type="button" aria-label="Закрыть">✕</button>
+    <div class="sheet-body" id="sheetBody"></div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<!-- Экран загрузки / офлайн-доход -->
+<div class="overlay is-active" id="overlay">
+  <div class="overlay-card">
+    <div class="spinner" id="spinner">🐹</div>
+    <b id="overlayTitle">Подключаемся к игре…</b>
+    <span id="overlayText">Проверяем данные Telegram</span>
+    <button class="btn btn-primary" id="overlayBtn" type="button" hidden>Продолжить</button>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
